@@ -100,14 +100,25 @@ with torch.no_grad():
 
     # detect videos
     elif cfg.video is not None:
-        vid = cv2.VideoCapture(cfg.video)
+        
+        if cfg.video.isdigit():
+            vid = cv2.VideoCapture("http://192.168.50.60:8080/video")
+        else:
+            vid = cv2.VideoCapture(cfg.video)
 
-        target_fps = round(vid.get(cv2.CAP_PROP_FPS))
+        
         frame_width = round(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = round(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        num_frames = round(vid.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        name = cfg.video.split('/')[-1]
+       
+        
+        if cfg.video.isdigit():
+            name = "webcam"
+            target_fps = 30
+            num_frames = 2000
+        else:
+            target_fps = round(vid.get(cv2.CAP_PROP_FPS))
+            num_frames = round(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+            name = cfg.video.split('/')[-1]
         video_writer = cv2.VideoWriter(f'results/videos/{name}', cv2.VideoWriter_fourcc(*"mp4v"), target_fps,
                                        (frame_width, frame_height))
 
@@ -115,7 +126,8 @@ with torch.no_grad():
         timer.reset()
         t_fps = 0
 
-        for i in range(num_frames):
+        i = 0
+        while vid.isOpened():
             if i == 1:
                 timer.start()
 
@@ -160,7 +172,7 @@ with torch.no_grad():
                 print(f'\rDetecting: {bar_str} {i + 1}/{num_frames}, fps: {fps:.2f} | total fps: {t_fps:.2f} | '
                       f't_t: {t_t:.3f} | t_d: {t_d:.3f} | t_f: {t_f:.3f} | t_nms: {t_nms:.3f} | '
                       f't_after_nms: {t_an:.3f} | t_save_img: {t_si:.3f}', end='')
-
+            i+=1
         if not cfg.real_time:
             print(f'\n\nFinished, saved in: results/videos/{name}')
 

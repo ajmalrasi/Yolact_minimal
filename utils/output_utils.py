@@ -220,8 +220,11 @@ def draw_img(ids_p, class_p, box_p, mask_p, img_origin, cfg, img_name=None, fps=
                 new_mask = mask_p[i] == 0
                 new_mask = np.tile(new_mask * 255, (3, 1, 1)).transpose((1, 2, 0))
                 x1, y1, x2, y2 = box_p[i, :]
-                img_matting = (one_obj + new_mask)[y1:y2, x1:x2, :]
-                cv2.imwrite(f'results/images/{img_name}_{i}.jpg', img_matting)
+                
+                img_crop = (one_obj + new_mask)[y1:y2, x1:x2, :]
+                if not 0 in img_crop.shape:
+                    img_fused = img_crop
+                    # cv2.imwrite(f'results/images/{img_name}_{i}.jpg', img_fused)
 
     scale = 0.6
     thickness = 1
